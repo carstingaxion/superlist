@@ -41,7 +41,7 @@ const LISTITEM_TEMPLATE = [["core/paragraph"]];
  * @return {WPElement} Element to render.
  */
 export default function Edit(props) {
-	const { clientId, name } = props;
+	const { clientId, name, isSelected } = props;
 	const { selectBlock } = useDispatch(blockEditorStore);
 	const { hasInnerBlocks } = useSelect(
 		(select) => {
@@ -93,6 +93,46 @@ export default function Edit(props) {
 			: InnerBlocks.ButtonBlockAppender,
 	});
 
+	// var selectionID = document.getSelection().focusNode.focus();
+	// console.log(selectionID);
+
+	// const { descendantClientId } = useSelect((select) => {
+	// 	const { getClientIdsOfDescendants, getBlock } = select(blockEditorStore);
+	// 	const descendantClientIds = getClientIdsOfDescendants([clientId]);
+	// 	const emptyParagraph = descendantClientIds
+	// 		? getBlock(descendantClientIds[0])
+	// 		: null;
+	// 	if (
+	// 		emptyParagraph &&
+	// 		"core/paragraph" === emptyParagraph.name &&
+	// 		"" === emptyParagraph.attributes.content
+	// 	) {
+	// 		// selectBlock(descendantClientIds[0]);
+	// 	}
+
+	// 	return {
+	// 		descendantClientId: descendantClientIds[0],
+	// 	};
+	// }, []);
+
+	// const { descendantClientId } = useSelect((select) => {
+	// 	const { getClientIdsOfDescendants, getBlock } = select(blockEditorStore);
+	// 	var selectionID = document.getSelection().focusNode;
+	// 	console.log(selectionID);
+	// 	console.log(getBlock(clientId));
+	// 	// const descendantClientId = getClientIdsOfDescendants([clientId]);
+	// 	// const pBlock = descendantClientId ? getBlock(descendantClientId[0]) : null;
+	// 	// if (pBlock) {
+	// 	// 	pBlock.focus();
+	// 	// }
+	// 	// const theNode = pBlock ? findDOMNode(pBlock) : null;
+	// 	// console.log(theNode);
+
+	// 	return {
+	// 		descendantClientId: descendantClientId,
+	// 	};
+	// });
+	// console.log(innerBlockProps);
 	return (
 		<>
 			<BlockControls>

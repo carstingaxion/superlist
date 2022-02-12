@@ -32,8 +32,8 @@ import {
 	PanelRow,
 	__experimentalUnitControl as UnitControl,
 } from "@wordpress/components";
-import { useSelect } from "@wordpress/data";
-import { useState } from "@wordpress/element";
+import { useSelect, useDispatch } from "@wordpress/data";
+import { useState, useEffect } from "@wordpress/element";
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
  * Those files can contain any CSS code that gets applied to the editor.
@@ -50,7 +50,7 @@ import { Orientation } from "./orientation";
 const ALLOWED_BLOCKS = ["createwithrani/superlist-item"];
 const LIST_TEMPLATE = [
 	["createwithrani/superlist-item"],
-	["createwithrani/superlist-item"],
+	// ["createwithrani/superlist-item"],
 ];
 
 /**
@@ -62,9 +62,9 @@ const LIST_TEMPLATE = [
  * @return {WPElement} Element to render.
  */
 export default function Edit(props) {
-	const { attributes, setAttributes } = props;
+	const { attributes, setAttributes, clientId, isSelected } = props;
 	const { listStyle, orientation, itemWidth, verticalAlignment } = attributes;
-
+	console.log(isSelected);
 	// check if theme.json has set a preferred list orientation
 	const themeListOrientation = useSetting(
 		"custom.superlist-block.listSettings.orientation"
@@ -112,6 +112,31 @@ export default function Edit(props) {
 		setAttributes({ orientation: orientation });
 	}
 	const ListContainer = "none" !== listStyle ? listStyle : "div";
+
+	const { selectBlock } = useDispatch(blockEditorStore);
+	const { descendantClientId } = useSelect((select) => {
+		const { getClientIdsOfDescendants, getBlock } = select(blockEditorStore);
+		const descendantClientIds = getClientIdsOfDescendants([clientId]);
+		console.log(descendantClientIds);
+		const emptyParagraph = descendantClientIds
+			? getBlock(descendantClientIds[1])
+			: null;
+
+		return {
+			descendantClientId: emptyParagraph ? emptyParagraph : null,
+		};
+	}, []);
+
+	// if (
+	// 	descendantClientId &&
+	// 	"core/paragraph" === descendantClientId.name &&
+	// 	"" === descendantClientId.attributes.content &&
+	// 	isSelected
+	// ) {
+	// 	selectBlock(descendantClientId.clientId);
+	// 	console.log("hi");
+	// }
+
 	return (
 		<>
 			<BlockControls>
