@@ -20,4 +20,12 @@
 			margin-bottom: 0;
 		}
 	}
+	& > .block-list-appender {
+		display: none;
+		transition: 0.5s ease all;
+	}
+	&.has-child-selected > .block-list-appender,
+	&.is-selected > .block-list-appender {
+		position: static;
+	}
 }

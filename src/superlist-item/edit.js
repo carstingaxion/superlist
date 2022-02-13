@@ -22,6 +22,7 @@ import { ToolbarButton, ToolbarGroup } from "@wordpress/components";
 import { useSelect, useDispatch } from "@wordpress/data";
 import { getBlockType, createBlock } from "@wordpress/blocks";
 import { plusCircle } from "@wordpress/icons";
+import { useState, useEffect } from "@wordpress/element";
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -54,8 +55,9 @@ export default function Edit(props) {
 		[clientId]
 	);
 	const { parentBlockType, firstParentClientId } = useSelect((select) => {
-		const { getBlockName, getBlockParents, getSelectedBlockClientId } =
-			select(blockEditorStore);
+		const { getBlockName, getBlockParents, getSelectedBlockClientId } = select(
+			blockEditorStore
+		);
 		const selectedBlockClientId = getSelectedBlockClientId();
 		const parents = getBlockParents(selectedBlockClientId);
 		const _firstParentClientId = parents[parents.length - 1];
@@ -70,8 +72,9 @@ export default function Edit(props) {
 	const blockProps = useBlockProps({});
 	const { insertBlock } = useDispatch("core/block-editor");
 	const { parentinnerBlocks } = useSelect((select) => ({
-		parentinnerBlocks:
-			select("core/block-editor").getBlocks(firstParentClientId),
+		parentinnerBlocks: select("core/block-editor").getBlocks(
+			firstParentClientId
+		),
 	}));
 
 	function getCurrentBlockPosition(block) {
@@ -87,7 +90,7 @@ export default function Edit(props) {
 	};
 	const innerBlockProps = useInnerBlocksProps(blockProps, {
 		template: LISTITEM_TEMPLATE,
-		templateInsertUpdateSelection: true,
+		templateInsertUpdatesSelection: true,
 		renderAppender: hasInnerBlocks
 			? undefined
 			: InnerBlocks.ButtonBlockAppender,
@@ -133,6 +136,9 @@ export default function Edit(props) {
 	// 	};
 	// });
 	// console.log(innerBlockProps);
+	const DoubleEnter = () => {
+		return useKeyPress("h") && insertListItem();
+	};
 	return (
 		<>
 			<BlockControls>
@@ -158,7 +164,36 @@ export default function Edit(props) {
 					/>
 				</ToolbarGroup>
 			</BlockControls>
+
 			<li {...innerBlockProps} />
 		</>
 	);
+}
+
+function useKeyPress(targetKey) {
+	// State for keeping track of whether key is pressed
+	const [keyPressed, setKeyPressed] = useState(false);
+	// If pressed key is our target key then set to true
+	function downHandler({ key }) {
+		if (key === targetKey) {
+			setKeyPressed(true);
+		}
+	}
+	// If released key is our target key then set to false
+	const upHandler = ({ key }) => {
+		if (key === targetKey) {
+			setKeyPressed(false);
+		}
+	};
+	// Add event listeners
+	useEffect(() => {
+		window.addEventListener("keydown", downHandler);
+		window.addEventListener("keyup", upHandler);
+		// Remove event listeners on cleanup
+		return () => {
+			window.removeEventListener("keydown", downHandler);
+			window.removeEventListener("keyup", upHandler);
+		};
+	}, []); // Empty array ensures that effect is only run on mount and unmount
+	return keyPressed;
 }

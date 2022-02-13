@@ -31,9 +31,11 @@ import {
 	PanelBody,
 	PanelRow,
 	__experimentalUnitControl as UnitControl,
+	Button,
 } from "@wordpress/components";
 import { useSelect, useDispatch } from "@wordpress/data";
 import { useState, useEffect } from "@wordpress/element";
+import { createBlock } from "@wordpress/blocks";
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
  * Those files can contain any CSS code that gets applied to the editor.
@@ -90,12 +92,29 @@ export default function Edit(props) {
 		}),
 		style: "horizontal" === listOrientation ? subItemWidth : {},
 	});
-
+	const { insertBlock } = useDispatch("core/block-editor");
+	const { innerBlocks } = useSelect((select) => ({
+		innerBlocks: select("core/block-editor").getBlocks(clientId),
+	}));
+	const insertListItem = () => {
+		const block = createBlock("createwithrani/superlist-item");
+		insertBlock(block, innerBlocks.length, clientId);
+	};
+	const ListItemAppender = () => (
+		<Button
+			isSecondary
+			className="superlist-block-appender"
+			onClick={insertListItem}
+		>
+			{__("Add a Super List Item", "superlist-block")}
+		</Button>
+	);
 	const innerBlockProps = useInnerBlocksProps(blockProps, {
 		allowedBlocks: ALLOWED_BLOCKS,
 		template: LIST_TEMPLATE,
 		orientation: `${listOrientation}`,
-		templateInsertUpdateSelection: true,
+		templateInsertUpdatesSelection: true,
+		renderAppender: ListItemAppender,
 	});
 	function switchStyle(style) {
 		setAttributes({ listStyle: style });
