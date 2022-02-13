@@ -18,9 +18,7 @@ import { __ } from "@wordpress/i18n";
  */
 import {
 	useBlockProps,
-	InnerBlocks,
 	BlockControls,
-	// __experimentalUseInnerBlocksProps as useInnerBlocksProps,
 	useInnerBlocksProps,
 	store as blockEditorStore,
 	InspectorControls,
@@ -50,10 +48,7 @@ import { Orientation } from "./orientation";
  * Internal Dependencies
  */
 const ALLOWED_BLOCKS = ["createwithrani/superlist-item"];
-const LIST_TEMPLATE = [
-	["createwithrani/superlist-item"],
-	// ["createwithrani/superlist-item"],
-];
+const LIST_TEMPLATE = [["createwithrani/superlist-item"]];
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -66,7 +61,11 @@ const LIST_TEMPLATE = [
 export default function Edit(props) {
 	const { attributes, setAttributes, clientId, isSelected } = props;
 	const { listStyle, orientation, itemWidth, verticalAlignment } = attributes;
-	console.log(isSelected);
+	const { insertBlock } = useDispatch("core/block-editor");
+	const { innerBlocks } = useSelect((select) => ({
+		innerBlocks: select("core/block-editor").getBlocks(clientId),
+	}));
+
 	// check if theme.json has set a preferred list orientation
 	const themeListOrientation = useSetting(
 		"custom.superlist-block.listSettings.orientation"
@@ -92,23 +91,22 @@ export default function Edit(props) {
 		}),
 		style: "horizontal" === listOrientation ? subItemWidth : {},
 	});
-	const { insertBlock } = useDispatch("core/block-editor");
-	const { innerBlocks } = useSelect((select) => ({
-		innerBlocks: select("core/block-editor").getBlocks(clientId),
-	}));
+
 	const insertListItem = () => {
 		const block = createBlock("createwithrani/superlist-item");
 		insertBlock(block, innerBlocks.length, clientId);
 	};
-	const ListItemAppender = () => (
-		<Button
-			isSecondary
-			className="superlist-block-appender"
-			onClick={insertListItem}
-		>
-			{__("Add a Super List Item", "superlist-block")}
-		</Button>
-	);
+	function ListItemAppender() {
+		return (
+			<Button
+				isSecondary
+				className="superlist-block-appender"
+				onClick={insertListItem}
+			>
+				{__("Add a Super List Item", "superlist-block")}
+			</Button>
+		);
+	}
 	const innerBlockProps = useInnerBlocksProps(blockProps, {
 		allowedBlocks: ALLOWED_BLOCKS,
 		template: LIST_TEMPLATE,
@@ -116,45 +114,30 @@ export default function Edit(props) {
 		templateInsertUpdatesSelection: true,
 		renderAppender: ListItemAppender,
 	});
+
+	/**
+	 * Change the type of list
+	 * @param {string} style ol || ul || none
+	 */
 	function switchStyle(style) {
 		setAttributes({ listStyle: style });
 	}
+
 	function setItemWidth(value) {
 		setWidth(value);
 		setAttributes({ itemWidth: value });
 	}
+
 	function updateAlignment(verticalAlignment) {
 		setAttributes({ verticalAlignment: verticalAlignment });
 	}
+
 	function updateOrientation(orientation) {
 		setListOrientation(orientation);
 		setAttributes({ orientation: orientation });
 	}
+
 	const ListContainer = "none" !== listStyle ? listStyle : "div";
-
-	const { selectBlock } = useDispatch(blockEditorStore);
-	const { descendantClientId } = useSelect((select) => {
-		const { getClientIdsOfDescendants, getBlock } = select(blockEditorStore);
-		const descendantClientIds = getClientIdsOfDescendants([clientId]);
-		console.log(descendantClientIds);
-		const emptyParagraph = descendantClientIds
-			? getBlock(descendantClientIds[1])
-			: null;
-
-		return {
-			descendantClientId: emptyParagraph ? emptyParagraph : null,
-		};
-	}, []);
-
-	// if (
-	// 	descendantClientId &&
-	// 	"core/paragraph" === descendantClientId.name &&
-	// 	"" === descendantClientId.attributes.content &&
-	// 	isSelected
-	// ) {
-	// 	selectBlock(descendantClientId.clientId);
-	// 	console.log("hi");
-	// }
 
 	return (
 		<>
